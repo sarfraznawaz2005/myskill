@@ -4,6 +4,33 @@ import chalk from "chalk";
 import { platforms, getPlatform, getPlatformPath } from "../platforms/index.js";
 import { promptWithCancellation } from "../utils/prompt.js";
 
+async function uninstallSkill(targetPath, options = {}) {
+  // Confirm deletion
+  if (!options.nonInteractive) {
+    const { confirm } = await promptWithCancellation([
+      {
+        type: "confirm",
+        name: "confirm",
+        message: `Are you sure you want to delete ${targetPath}? This cannot be undone.`,
+        default: false,
+      },
+    ]);
+
+    if (!confirm) {
+      console.log(chalk.yellow("Aborted."));
+      return;
+    }
+  }
+
+  try {
+    await fs.remove(targetPath);
+    console.log(chalk.green(`Successfully removed skill from ${targetPath}`));
+  } catch (e) {
+    console.error(chalk.red(`Error removing skill: ${e.message}`));
+    // Don't exit, continue to next skill
+  }
+}
+
 export async function uninstall(name, options = {}) {
   // If name is not provided, try to infer from current directory
   let skillName = name;
@@ -94,38 +121,26 @@ export async function uninstall(name, options = {}) {
           type: "list",
           name: "target",
           message: "Multiple skills found. Which one to uninstall?",
-          choices: found.map((f) => ({
-            name: `${f.platform.name} (${f.location}) - ${f.path}`,
-            value: f.path,
-          })),
+          choices: [
+            ...found.map((f) => ({
+              name: `${f.platform.name} (${f.location}) - ${f.path}`,
+              value: f.path,
+            })),
+            { name: "ALL skills", value: "all" },
+          ],
         },
       ]);
-      targetPath = answer.target;
+      if (answer.target === "all") {
+        // Uninstall all found skills
+        for (const skill of found) {
+          await uninstallSkill(skill.path, options);
+        }
+        return;
+      } else {
+        targetPath = answer.target;
+      }
     }
   }
 
-  // Confirm deletion
-  if (!options.nonInteractive) {
-    const { confirm } = await promptWithCancellation([
-      {
-        type: "confirm",
-        name: "confirm",
-        message: `Are you sure you want to delete ${targetPath}? This cannot be undone.`,
-        default: false,
-      },
-    ]);
-
-    if (!confirm) {
-      console.log(chalk.yellow("Aborted."));
-      return;
-    }
-  }
-
-  try {
-    await fs.remove(targetPath);
-    console.log(chalk.green(`Successfully removed skill from ${targetPath}`));
-  } catch (e) {
-    console.error(chalk.red(`Error removing skill: ${e.message}`));
-    process.exit(1);
-  }
+  await uninstallSkill(targetPath, options);
 }

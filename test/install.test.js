@@ -18,13 +18,30 @@ vi.mock("fs-extra", () => ({
   },
 }));
 
+vi.mock("path", () => ({
+  default: {
+    resolve: (p) => p,
+    basename: (p) => p.split("/").pop(),
+    join: (...args) => args.join("/"),
+  },
+}));
+
 // Mock platforms
 vi.mock("../src/platforms/index.js", () => ({
   platforms: {
     claude: { id: "claude", name: "Claude", defaultPath: "/global/claude" },
+    opencode: {
+      id: "opencode",
+      name: "OpenCode",
+      defaultPath: "/global/opencode",
+    },
+    codex: { id: "codex", name: "Codex", defaultPath: "/global/codex" },
+    gemini: { id: "gemini", name: "Gemini", defaultPath: "/global/gemini" },
   },
   getPlatform: vi.fn(),
-  getPlatformPath: vi.fn().mockResolvedValue("/global/claude"),
+  getPlatformPath: vi
+    .fn()
+    .mockImplementation((id) => Promise.resolve(`/global/${id}`)),
 }));
 
 const originalConsoleLog = console.log;
@@ -72,6 +89,61 @@ describe("Install Command", () => {
     expect(fs.copy).toHaveBeenCalled();
     expect(mockConsoleLog).toHaveBeenCalledWith(
       expect.stringContaining("Successfully installed"),
+    );
+  });
+
+  it("should install to all platforms when ALL is selected in interactive mode", async () => {
+    // Mock inquirer to return "all"
+    const { default: inquirer } = await import("inquirer");
+    inquirer.prompt.mockResolvedValue({ platform: "all" });
+
+    fs.pathExists.mockResolvedValue(false); // Doesn't exist
+
+    await install("/source/skill", {});
+
+    // Should call copy for each platform
+    expect(fs.copy).toHaveBeenCalledTimes(4);
+    expect(fs.copy).toHaveBeenCalledWith(
+      "/source/skill",
+      "/global/claude/skill",
+      expect.any(Object),
+    );
+    expect(fs.copy).toHaveBeenCalledWith(
+      "/source/skill",
+      "/global/opencode/skill",
+      expect.any(Object),
+    );
+    expect(fs.copy).toHaveBeenCalledWith(
+      "/source/skill",
+      "/global/codex/skill",
+      expect.any(Object),
+    );
+    expect(fs.copy).toHaveBeenCalledWith(
+      "/source/skill",
+      "/global/gemini/skill",
+      expect.any(Object),
+    );
+
+    // Should log success for each
+    expect(mockConsoleLog).toHaveBeenCalledWith(
+      expect.stringContaining(
+        "Successfully installed 'skill' to /global/claude/skill (Claude)",
+      ),
+    );
+    expect(mockConsoleLog).toHaveBeenCalledWith(
+      expect.stringContaining(
+        "Successfully installed 'skill' to /global/opencode/skill (OpenCode)",
+      ),
+    );
+    expect(mockConsoleLog).toHaveBeenCalledWith(
+      expect.stringContaining(
+        "Successfully installed 'skill' to /global/codex/skill (Codex)",
+      ),
+    );
+    expect(mockConsoleLog).toHaveBeenCalledWith(
+      expect.stringContaining(
+        "Successfully installed 'skill' to /global/gemini/skill (Gemini)",
+      ),
     );
   });
 });
