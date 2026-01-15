@@ -97,7 +97,10 @@ describe("Install Command", () => {
     const { default: inquirer } = await import("inquirer");
     inquirer.prompt.mockResolvedValue({ platform: "all" });
 
-    fs.pathExists.mockResolvedValue(false); // Doesn't exist
+    fs.pathExists
+      .mockResolvedValueOnce(true)
+      .mockResolvedValueOnce(false)
+      .mockResolvedValue(false);
 
     await install("/source/skill", {});
 

@@ -3,6 +3,7 @@ import path from "path";
 import chalk from "chalk";
 import { platforms, getPlatformPath } from "../platforms/index.js";
 import { promptWithCancellation } from "../utils/prompt.js";
+import { findSkills } from "../utils/skills.js";
 
 async function installToPlatform(sourcePath, platform, options = {}) {
   const skillName = path.basename(sourcePath);
@@ -59,13 +60,54 @@ async function installToPlatform(sourcePath, platform, options = {}) {
   }
 }
 
-export async function install(sourcePath, options = {}) {
+export async function install(pathStr, options = {}) {
+  let sourcePath = pathStr;
+
+  if (!sourcePath) {
+    if (options.nonInteractive) {
+      console.error(
+        chalk.red("Error: Path is required in non-interactive mode"),
+      );
+      process.exit(1);
+    }
+
+    const skills = await findSkills(".");
+    const validSkills = skills.filter((s) => !s.error);
+
+    if (validSkills.length === 0) {
+      console.error(
+        chalk.red("Error: No valid skills detected in current directory"),
+      );
+      process.exit(1);
+      return;
+    }
+
+    if (validSkills.length === 1) {
+      sourcePath = validSkills[0].path;
+      console.log(chalk.blue(`Detected skill: ${validSkills[0].name}`));
+    } else {
+      const { selectedSkillPath } = await promptWithCancellation([
+        {
+          type: "list",
+          name: "selectedSkillPath",
+          message: "Select a skill to install:",
+          choices: validSkills.map((s) => ({
+            name: `${s.name} (${s.platform.name})`,
+            value: s.path,
+          })),
+        },
+      ]);
+      sourcePath = selectedSkillPath;
+    }
+  }
+
   const resolvedSource = path.resolve(sourcePath);
   if (!(await fs.pathExists(resolvedSource))) {
     console.error(
       chalk.red(`Error: Source path ${resolvedSource} does not exist`),
     );
     process.exit(1);
+    return;
   }
 
   let selectedPlatforms = [];
@@ -77,13 +119,14 @@ export async function install(sourcePath, options = {}) {
     }
     selectedPlatforms = [platform];
   } else {
-    console.log(
-      chalk.yellow("Platform not specified. Attempting to detect..."),
-    );
-
+    let detectedPlatformId = null;
     const skillMdPath = path.join(resolvedSource, "SKILL.md");
     if (await fs.pathExists(skillMdPath)) {
-      // Exists
+      const skills = await findSkills(path.dirname(resolvedSource));
+      const currentSkill = skills.find((s) => s.path === resolvedSource);
+      if (currentSkill) {
+        detectedPlatformId = currentSkill.platform.id;
+      }
     }
 
     const answers = await promptWithCancellation([
@@ -91,6 +134,7 @@ export async function install(sourcePath, options = {}) {
         type: "list",
         name: "platform",
         message: "Select target platform to install to:",
+        default: detectedPlatformId,
         choices: [
           ...Object.values(platforms).map((p) => ({
             name: p.name,

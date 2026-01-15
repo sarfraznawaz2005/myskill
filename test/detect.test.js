@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import fs from "fs-extra";
 import path from "path";
 import { detect } from "../src/commands/detect.js";
+import { findSkills } from "../src/utils/skills.js";
 
 vi.mock("fs-extra", () => ({
   default: {
@@ -11,12 +12,13 @@ vi.mock("fs-extra", () => ({
   },
 }));
 
-vi.mock("path", () => ({
-  default: {
-    resolve: vi.fn((p) => (p === "." ? "/mock/cwd" : p)),
-    join: vi.fn((...args) => args.join("/")),
-  },
-}));
+vi.mock("../src/utils/skills.js", async () => {
+  const actual = await vi.importActual("../src/utils/skills.js");
+  return {
+    ...actual,
+    findSkills: vi.fn(),
+  };
+});
 
 const originalConsoleLog = console.log;
 const originalConsoleError = console.error;
@@ -42,21 +44,21 @@ describe("Detect Command", () => {
   });
 
   it("should detect Claude skills", async () => {
-    fs.readdir.mockResolvedValue([
-      { name: "claude-skill", isDirectory: () => true },
-      { name: "regular-dir", isDirectory: () => true },
+    findSkills.mockResolvedValue([
+      {
+        name: "claude-skill",
+        platform: { id: "claude", name: "Claude Code" },
+        description: "A Claude skill",
+      },
     ]);
-    fs.pathExists.mockResolvedValue(true);
-    fs.readFile.mockResolvedValue(`---
-name: claude-skill
-description: A Claude skill
-allowed-tools: ["Read", "Write"]
----`);
 
     await detect("test-dir");
 
     expect(mockConsoleLog).toHaveBeenCalledWith(
-      expect.stringContaining("Detecting skills in: test-dir"),
+      expect.stringContaining("Detecting skills in:"),
+    );
+    expect(mockConsoleLog).toHaveBeenCalledWith(
+      expect.stringContaining("test-dir"),
     );
     expect(mockConsoleLog).toHaveBeenCalledWith(
       expect.stringContaining("claude-skill: Claude Code (claude)"),
@@ -67,15 +69,13 @@ allowed-tools: ["Read", "Write"]
   });
 
   it("should detect OpenCode skills", async () => {
-    fs.readdir.mockResolvedValue([
-      { name: "opencode-skill", isDirectory: () => true },
+    findSkills.mockResolvedValue([
+      {
+        name: "opencode-skill",
+        platform: { id: "opencode", name: "OpenCode" },
+        description: "An OpenCode skill",
+      },
     ]);
-    fs.pathExists.mockResolvedValue(true);
-    fs.readFile.mockResolvedValue(`---
-name: opencode-skill
-description: An OpenCode skill
-license: MIT
----`);
 
     await detect("test-dir");
 
@@ -85,16 +85,13 @@ license: MIT
   });
 
   it("should detect Codex skills", async () => {
-    fs.readdir.mockResolvedValue([
-      { name: "codex-skill", isDirectory: () => true },
+    findSkills.mockResolvedValue([
+      {
+        name: "codex-skill",
+        platform: { id: "codex", name: "OpenAI Codex" },
+        description: "A Codex skill",
+      },
     ]);
-    fs.pathExists.mockResolvedValue(true);
-    fs.readFile.mockResolvedValue(`---
-name: codex-skill
-description: A Codex skill
-metadata:
-  short-description: Short desc
----`);
 
     await detect("test-dir");
 
@@ -104,14 +101,13 @@ metadata:
   });
 
   it("should default to Gemini for minimal skills", async () => {
-    fs.readdir.mockResolvedValue([
-      { name: "gemini-skill", isDirectory: () => true },
+    findSkills.mockResolvedValue([
+      {
+        name: "gemini-skill",
+        platform: { id: "gemini", name: "Gemini CLI" },
+        description: "A Gemini skill",
+      },
     ]);
-    fs.pathExists.mockResolvedValue(true);
-    fs.readFile.mockResolvedValue(`---
-name: gemini-skill
-description: A Gemini skill
----`);
 
     await detect("test-dir");
 
@@ -121,10 +117,7 @@ description: A Gemini skill
   });
 
   it("should handle no skills found", async () => {
-    fs.readdir.mockResolvedValue([
-      { name: "regular-dir", isDirectory: () => true },
-    ]);
-    fs.pathExists.mockResolvedValue(false);
+    findSkills.mockResolvedValue([]);
 
     await detect("test-dir");
 
@@ -134,11 +127,12 @@ description: A Gemini skill
   });
 
   it("should handle invalid frontmatter", async () => {
-    fs.readdir.mockResolvedValue([
-      { name: "bad-skill", isDirectory: () => true },
+    findSkills.mockResolvedValue([
+      {
+        name: "bad-skill",
+        error: "Invalid frontmatter format",
+      },
     ]);
-    fs.pathExists.mockResolvedValue(true);
-    fs.readFile.mockResolvedValue("invalid content");
 
     await detect("test-dir");
 
@@ -148,11 +142,12 @@ description: A Gemini skill
   });
 
   it("should handle read errors", async () => {
-    fs.readdir.mockResolvedValue([
-      { name: "error-skill", isDirectory: () => true },
+    findSkills.mockResolvedValue([
+      {
+        name: "error-skill",
+        error: "Read error",
+      },
     ]);
-    fs.pathExists.mockResolvedValue(true);
-    fs.readFile.mockRejectedValue(new Error("Read error"));
 
     await detect("test-dir");
 

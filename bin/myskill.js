@@ -51,8 +51,9 @@ program
 program
   .command("install")
   .description("Install a skill")
-  .argument("<path>", "Path to skill directory")
+  .argument("[path]", "Path to skill directory")
   .option("-p, --platform <platform>", "Target platform")
+
   .option("-f, --force", "Force overwrite if installed")
   .option("--non-interactive", "Run without interactive prompts")
   .action(async (pathStr, options) => {
