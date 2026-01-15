@@ -134,4 +134,21 @@ program
     run(skillName, args);
   });
 
+program
+  .command("platforms")
+  .description("List all supported platforms")
+  .action(async () => {
+    const { platformsCommand } = await import("../src/commands/platforms.js");
+    platformsCommand();
+  });
+
+program
+  .command("detect")
+  .description("Detect skills in directory")
+  .argument("[path]", "Path to directory to scan", ".")
+  .action(async (pathStr) => {
+    const { detect } = await import("../src/commands/detect.js");
+    detect(pathStr);
+  });
+
 program.parse();
