@@ -1,0 +1,56 @@
+{
+  "name": "myskill",
+  "version": "1.0.0",
+  "description": "CLI tool for creating and managing AI agent skills",
+  "author": "Sarfraz Ahmed <sarfraznawaz2005@gmail.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/sarfraznawaz2005/myskill#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sarfraznawaz2005/myskill.git"
+  },
+  "bugs": {
+    "url": "https://github.com/sarfraznawaz2005/myskill/issues"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "files": [
+    "bin",
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
+  "main": "./bin/myskill.js",
+  "bin": {
+    "myskill": "bin/myskill.js"
+  },
+  "type": "module",
+  "scripts": {
+    "build": "prettier --write \"src/**/*.js\" \"bin/**/*.js\"",
+    "test": "vitest run",
+    "prepublishOnly": "npm run build && npm test"
+  },
+  "keywords": [
+    "cli",
+    "ai",
+    "skills",
+    "claude",
+    "opencode"
+  ],
+  "dependencies": {
+    "chalk": "^5.4.1",
+    "commander": "^13.1.0",
+    "env-paths": "^3.0.0",
+    "fs-extra": "^11.3.0",
+    "fuse.js": "^7.1.0",
+    "inquirer": "^12.4.2",
+    "js-yaml": "^4.1.0",
+    "prettier": "^3.8.0",
+    "simple-git": "^3.30.0",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "vitest": "^4.0.17"
+  }
+}
