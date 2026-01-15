@@ -194,7 +194,6 @@ export async function create(options = {}) {
   try {
     await fs.ensureDir(targetDir);
     await fs.writeFile(path.join(targetDir, "SKILL.md"), fileContent);
-    await fs.ensureDir(path.join(targetDir, "scripts"));
     console.log(chalk.green(`Skill created successfully at ${targetDir}`));
   } catch (error) {
     console.error(chalk.red(`Error creating skill: ${error.message}`));

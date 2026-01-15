@@ -5,6 +5,7 @@ import os from "os";
 export const opencode = {
   id: "opencode",
   name: "OpenCode",
+  docsUrl: "https://opencode.ai/docs/skills",
   defaultPath: path.join(os.homedir(), ".config", "opencode", "skill"),
   schema: z.object({
     name: z

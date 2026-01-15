@@ -11,9 +11,11 @@
 - **Cross-Platform**: Works seamlessly on Windows, macOS, and Linux.
 - **Workspace Management**: Initialize skill workspaces and run experimental skills locally.
 - **Discovery**: Fuzzy find installed skills across all global and local scopes.
+- **Smart Detection**: Automatically identify skills in any directory, including nested platform-specific folders.
 - **Git Integration**: Pull and update skills directly from remote repositories.
-- **Interactive Experience**: Cancel any interactive prompt with **Escape** key or **Ctrl+C**.
+- **Interactive Experience**: Step-by-step guides with **Multi-selection** support for bulk actions.
 - **Configurable Paths**: Override default platform paths for custom setups.
+- **Onboarding**: Built-in guide for AI agents to understand the codebase.
 
 ## 📦 Installation
 
@@ -41,18 +43,13 @@ myskill create
 # Cancel anytime with Escape key or Ctrl+C
 ```
 
-Or use flags for automation:
+### Discovering Skills
+
+Detect skills in the current directory and platform-specific subfolders:
 
 ```bash
-myskill create \
-  --name "git-helper" \
-  --platform claude \
-  --description "Automates complex git workflows" \
-  --scope project \
-  --non-interactive
+myskill detect
 ```
-
-### Discovering Skills
 
 List all installed skills for a platform:
 
@@ -60,82 +57,60 @@ List all installed skills for a platform:
 myskill list --platform claude
 ```
 
-Find a skill by name or description (supports fuzzy search):
-
-```bash
-myskill find "deploy"
-```
-
-Validate a skill's structure and frontmatter:
-
-```bash
-myskill validate ./git-helper
-```
-
-Run a skill script (experimental):
-
-```bash
-myskill run ./git-helper -- arg1 arg2
-```
-
 ### Sharing Skills
 
-Install a local skill directory to the global platform path:
+Install a local skill directory to the global platform path (supports auto-detection and interactive selection):
 
 ```bash
-myskill install ./my-local-skill --platform claude
+myskill install
 ```
 
-Pull (clone/update) a skill from a Git repository:
+Uninstall skills with **multi-selection** support:
 
 ```bash
-myskill pull https://github.com/username/awesome-skill.git --platform opencode
+myskill uninstall
 ```
 
-Convert a skill from one platform format to another:
+### Configuration & Help
+
+List documentation URLs for all platforms:
 
 ```bash
-myskill convert ./claude-skill --to opencode
+myskill docs
 ```
 
-Uninstall a skill:
+Display onboarding guide for AI agents:
 
 ```bash
-myskill uninstall git-helper --platform claude
+myskill onboard
 ```
 
-### Configuration & Health
-
-Override default paths (useful for custom setups):
+Override default paths:
 
 ```bash
 myskill config set claude.path "/custom/path/to/skills"
 myskill config list
 ```
 
-Check system health (Git, permissions, paths):
-
-```bash
-myskill doctor
-```
-
 ## 🔧 Command Reference
 
-| Command     | Description                                                            | Usage                                   | Options                                                                                                                                                                                                                                                                                                                                     |
-| ----------- | ---------------------------------------------------------------------- | --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `create`    | Create a new skill interactively or via flags.                         | `myskill create [options]`              | `-n, --name <name>`: Skill name (lowercase alphanumeric with hyphens)<br>`-p, --platform <platform>`: Target platform (claude, opencode, codex, gemini)<br>`-d, --description <description>`: Skill description<br>`-s, --scope <scope>`: Scope (global, project). Default: project<br>`--non-interactive`: Run without interactive prompts |
-| `list`      | List all installed skills for a platform.                              | `myskill list [options]`                | `-p, --platform <platform>`: Filter by platform                                                                                                                                                                                                                                                                                             |
-| `platforms` | List all supported platforms.                                          | `myskill platforms`                     | None                                                                                                                                                                                                                                                                                                                                        |
-| `detect`    | Detect skills in directory and identify their platforms.               | `myskill detect [path]`                 | `[path]`: Path to directory to scan (default: current directory)                                                                                                                                                                                                                                                                            |
-| `find`      | Find skills by name or description with fuzzy search.                  | `myskill find [query] [options]`        | `[query]`: Search query (supports fuzzy matching)<br>`-p, --platform <platform>`: Filter by platform                                                                                                                                                                                                                                        |
-| `validate`  | Validate a skill's structure and frontmatter against platform schemas. | `myskill validate [path] [options]`     | `[path]`: Path to skill directory. Default: current directory<br>`-p, --platform <platform>`: Validate against specific platform                                                                                                                                                                                                            |
-| `run`       | Run a skill script (experimental).                                     | `myskill run <skill> [args...]`         | `<skill>`: Skill name or path<br>`[args...]`: Arguments to pass to the skill script                                                                                                                                                                                                                                                         |
-| `install`   | Install a local skill directory to the global platform path.           | `myskill install <path> [options]`      | `<path>`: Path to skill directory<br>`-p, --platform <platform>`: Target platform<br>`-f, --force`: Force overwrite if already installed<br>`--non-interactive`: Run without interactive prompts                                                                                                                                            |
-| `pull`      | Pull (clone/update) a skill from a Git repository.                     | `myskill pull <repoUrl> [options]`      | `<repoUrl>`: Repository URL<br>`-p, --platform <platform>`: Target platform<br>`-n, --name <name>`: Custom skill name<br>`--non-interactive`: Skip prompts                                                                                                                                                                                  |
-| `convert`   | Convert a skill from one platform format to another.                   | `myskill convert <path> [options]`      | `<path>`: Path to source skill<br>`-t, --to <platform>`: Target platform<br>`-f, --force`: Force overwrite if output exists<br>`--non-interactive`: Reserved for future interactive features                                                                                                                                                |
-| `uninstall` | Uninstall a skill from global or local paths.                          | `myskill uninstall [name] [options]`    | `[name]`: Skill name<br>`-p, --platform <platform>`: Platform context<br>`--non-interactive`: Skip confirmation                                                                                                                                                                                                                             |
-| `config`    | Manage configuration settings (e.g., custom paths).                    | `myskill config <action> [key] [value]` | `<action>`: Action (get, set, list)<br>`[key]`: Config key (e.g., claude.path)<br>`[value]`: Config value (for set)                                                                                                                                                                                                                         |
-| `doctor`    | Check system health (Git, permissions, paths).                         | `myskill doctor`                        | None                                                                                                                                                                                                                                                                                                                                        |
+| Command     | Description                                                            | Usage                                   | Options                                                                                                                                                                                                                                                             |
+| ----------- | ---------------------------------------------------------------------- | --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `create`    | Create a new skill interactively or via flags.                         | `myskill create [options]`              | `-n, --name <name>`: Skill name<br>`-p, --platform <platform>`: Target platform<br>`-d, --description <description>`: Skill description<br>`-s, --scope <scope>`: Scope (global, project). Default: project<br>`--non-interactive`: Run without interactive prompts |
+| `list`      | List all installed skills for a platform.                              | `myskill list [options]`                | `-p, --platform <platform>`: Filter by platform                                                                                                                                                                                                                     |
+| `platforms` | List all supported platforms.                                          | `myskill platforms`                     | None                                                                                                                                                                                                                                                                |
+| `detect`    | Detect skills in directory and platform folders.                       | `myskill detect [path]`                 | `[path]`: Path to directory to scan (default: current directory)                                                                                                                                                                                                    |
+| `docs`      | List documentation URLs for all platforms.                             | `myskill docs`                          | None                                                                                                                                                                                                                                                                |
+| `onboard`   | Display onboarding guide for AI agents.                                | `myskill onboard`                       | None                                                                                                                                                                                                                                                                |
+| `find`      | Find skills by name or description with fuzzy search.                  | `myskill find [query] [options]`        | `[query]`: Search query<br>`-p, --platform <platform>`: Filter by platform                                                                                                                                                                                          |
+| `validate`  | Validate a skill's structure and frontmatter against platform schemas. | `myskill validate [path] [options]`     | `[path]`: Path to skill directory. Default: current directory<br>`-p, --platform <platform>`: Validate against specific platform                                                                                                                                    |
+| `run`       | Run a skill script (experimental).                                     | `myskill run <skill> [args...]`         | `<skill>`: Skill name or path<br>`[args...]`: Arguments to pass to the skill script                                                                                                                                                                                 |
+| `install`   | Install a local skill to the global platform path.                     | `myskill install [path] [options]`      | `[path]`: Path to skill directory (optional - auto-detects if omitted)<br>`-p, --platform <platform>`: Target platform<br>`-f, --force`: Force overwrite<br>`--non-interactive`: Run without prompts                                                                |
+| `pull`      | Pull (clone/update) a skill from a Git repository.                     | `myskill pull <repoUrl> [options]`      | `<repoUrl>`: Repository URL<br>`-p, --platform <platform>`: Target platform<br>`-n, --name <name>`: Custom skill name<br>`--non-interactive`: Skip prompts                                                                                                          |
+| `convert`   | Convert a skill from one platform format to another.                   | `myskill convert <path> [options]`      | `<path>`: Path to source skill<br>`-t, --to <platform>`: Target platform<br>`-f, --force`: Force overwrite<br>`--non-interactive`: Fail if output exists                                                                                                            |
+| `uninstall` | Uninstall one or more skills from global or local paths.               | `myskill uninstall [name] [options]`    | `[name]`: Skill name (optional - triggers multi-select if omitted)<br>`-p, --platform <platform>`: Platform context<br>`--non-interactive`: Skip confirmation                                                                                                       |
+| `config`    | Manage configuration settings (e.g., custom paths).                    | `myskill config <action> [key] [value]` | `<action>`: Action (get, set, list)<br>`[key]`: Config key (e.g., claude.path)<br>`[value]`: Config value (for set)                                                                                                                                                 |
+| `doctor`    | Check system health (Git, permissions, paths).                         | `myskill doctor`                        | None                                                                                                                                                                                                                                                                |
 
 ## 🗺️ Roadmap
 

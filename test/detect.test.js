@@ -155,4 +155,31 @@ describe("Detect Command", () => {
       expect.stringContaining("Read error"),
     );
   });
+
+  it("should detect skills in platform-specific folders", async () => {
+    findSkills
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([
+        {
+          name: "claude-skill",
+          path: "test-dir/.claude/skills/claude-skill",
+          platform: { id: "claude", name: "Claude Code" },
+          description: "Claude skill in hidden folder",
+        },
+      ])
+      .mockResolvedValue([]);
+
+    fs.pathExists.mockImplementation(async (p) => {
+      return p.includes(".claude");
+    });
+
+    await detect("test-dir");
+
+    expect(mockConsoleLog).toHaveBeenCalledWith(
+      expect.stringContaining("claude-skill: Claude Code (claude)"),
+    );
+    expect(mockConsoleLog).toHaveBeenCalledWith(
+      expect.stringMatching(/Path: .claude[\\\/]skills[\\\/]claude-skill/),
+    );
+  });
 });

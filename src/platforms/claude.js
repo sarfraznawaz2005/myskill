@@ -30,6 +30,7 @@ try {
 export const claude = {
   id: "claude",
   name: "Claude Code",
+  docsUrl: "https://code.claude.com/docs/en/skills",
   defaultPath: path.join(os.homedir(), ".claude", "skills"),
   schema: z.object({
     name: z

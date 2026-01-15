@@ -5,6 +5,7 @@ import os from "os";
 export const gemini = {
   id: "gemini",
   name: "Gemini CLI",
+  docsUrl: "https://geminicli.com/docs/cli/skills",
   defaultPath: path.join(os.homedir(), ".gemini", "skills"),
   schema: z.object({
     name: z

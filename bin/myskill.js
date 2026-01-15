@@ -152,4 +152,20 @@ program
     detect(pathStr);
   });
 
+program
+  .command("docs")
+  .description("List documentation URLs for all platforms")
+  .action(async () => {
+    const { docs } = await import("../src/commands/docs.js");
+    docs();
+  });
+
+program
+  .command("onboard")
+  .description("Display onboarding guide for AI agents")
+  .action(async () => {
+    const { onboard } = await import("../src/commands/onboard.js");
+    await onboard();
+  });
+
 program.parse();
