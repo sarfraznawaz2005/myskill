@@ -2,6 +2,7 @@ import fs from "fs-extra";
 import path from "path";
 import chalk from "chalk";
 import yaml from "js-yaml";
+import Table from "cli-table3";
 import { platforms, getPlatformPath } from "../platforms/index.js";
 
 export async function list(options = {}) {
@@ -17,9 +18,9 @@ export async function list(options = {}) {
     targetPlatforms = Object.values(platforms);
   }
 
-  for (const platform of targetPlatforms) {
-    console.log(chalk.blue(`\n=== ${platform.name} Skills ===`));
+  const skillMap = {};
 
+  for (const platform of targetPlatforms) {
     const globalPath = await getPlatformPath(platform.id);
     const locations = [{ name: "Global", path: globalPath }];
 
@@ -42,14 +43,20 @@ export async function list(options = {}) {
                 const match = content.match(/^---\n([\s\S]*?)\n---/);
                 if (match) {
                   const fm = yaml.load(match[1]);
-                  console.log(
-                    `- ${chalk.bold(fm.name)} (${loc.name}): ${fm.description || "No description"}`,
-                  );
-                } else {
-                  console.log(`- ${item.name} (${loc.name}): [Invalid Format]`);
+                  const skillName = fm.name;
+                  if (!skillMap[skillName]) {
+                    skillMap[skillName] = {
+                      description: fm.description || "No description",
+                      platforms: [],
+                      location: loc.name,
+                    };
+                  }
+                  if (!skillMap[skillName].platforms.includes(platform.name)) {
+                    skillMap[skillName].platforms.push(platform.name);
+                  }
                 }
               } catch (e) {
-                console.log(`- ${item.name} (${loc.name}): [Read Error]`);
+                // Intentionally skip errors to avoid cluttering output
               }
             }
           }
@@ -57,4 +64,28 @@ export async function list(options = {}) {
       }
     }
   }
+
+  const table = new Table({
+    head: [
+      chalk.bold("Skill Name"),
+      chalk.bold("Platforms"),
+      chalk.bold("Location"),
+      chalk.bold("Description"),
+    ],
+    colWidths: [20, 40, 10, 50],
+    wordWrap: true,
+  });
+
+  for (const [skillName, data] of Object.entries(skillMap)) {
+    const platformsStr = chalk.cyan(data.platforms.join(", "));
+    table.push([
+      chalk.bold(skillName),
+      platformsStr,
+      data.location,
+      data.description,
+    ]);
+  }
+
+  console.log(chalk.bold("Skill Listing:"));
+  console.log(table.toString());
 }
