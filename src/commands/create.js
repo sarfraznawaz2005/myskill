@@ -168,7 +168,9 @@ export async function create(options = {}) {
     const localBase =
       answers.platform === "opencode"
         ? ".opencode/skill"
-        : `.${answers.platform}/skills`;
+        : answers.platform === "copilot"
+          ? ".github/skills"
+          : `.${answers.platform}/skills`;
     targetDir = path.join(process.cwd(), localBase, answers.name);
   }
 

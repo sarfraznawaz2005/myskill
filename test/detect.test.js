@@ -182,4 +182,23 @@ describe("Detect Command", () => {
       expect.stringMatching(/Path: .claude[\\\/]skills[\\\/]claude-skill/),
     );
   });
+
+  it("should detect Copilot skills", async () => {
+    findSkills.mockResolvedValue([
+      {
+        name: "copilot-skill",
+        platform: { id: "copilot", name: "GitHub Copilot CLI" },
+        description: "A Copilot skill",
+      },
+    ]);
+
+    await detect("test-dir");
+
+    expect(mockConsoleLog).toHaveBeenCalledWith(
+      expect.stringContaining("copilot-skill: GitHub Copilot CLI (copilot)"),
+    );
+    expect(mockConsoleLog).toHaveBeenCalledWith(
+      expect.stringContaining("Description: A Copilot skill"),
+    );
+  });
 });

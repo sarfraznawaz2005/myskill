@@ -1,14 +1,16 @@
 import { claude } from "./claude.js";
-import { opencode } from "./opencode.js";
+import { copilot } from "./copilot.js";
 import { codex } from "./codex.js";
 import { gemini } from "./gemini.js";
+import { opencode } from "./opencode.js";
 import { getConfig } from "../utils/config.js";
 
 export const platforms = {
   claude,
-  opencode,
+  copilot,
   codex,
   gemini,
+  opencode,
 };
 
 export function getPlatform(id) {

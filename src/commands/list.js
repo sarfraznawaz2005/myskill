@@ -25,7 +25,11 @@ export async function list(options = {}) {
     const locations = [{ name: "Global", path: globalPath }];
 
     const localBase =
-      platform.id === "opencode" ? ".opencode/skill" : `.${platform.id}/skills`;
+      platform.id === "opencode"
+        ? ".opencode/skill"
+        : platform.id === "copilot"
+          ? ".github/skills"
+          : `.${platform.id}/skills`;
     locations.push({
       name: "Project",
       path: path.join(process.cwd(), localBase),

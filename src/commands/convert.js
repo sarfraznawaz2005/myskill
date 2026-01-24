@@ -65,6 +65,12 @@ export async function convert(sourcePath, options = {}) {
   } else if (targetPlatform.id === "claude") {
     if (sourceFm["allowed-tools"])
       newFm["allowed-tools"] = sourceFm["allowed-tools"];
+  } else if (targetPlatform.id === "copilot") {
+    if (sourceFm.license) newFm.license = sourceFm.license;
+    if (sourceFm.compatibility) newFm.compatibility = sourceFm.compatibility;
+    if (sourceFm.metadata) newFm.metadata = sourceFm.metadata;
+    if (sourceFm["allowed-tools"])
+      newFm["allowed-tools"] = sourceFm["allowed-tools"];
   }
 
   const newContent = generateSkill(newFm, markdownBody);

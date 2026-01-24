@@ -1,6 +1,6 @@
 {
   "name": "myskill",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "description": "CLI tool for creating and managing AI agent skills",
   "author": "Sarfraz Ahmed <sarfraznawaz2005@gmail.com>",
   "license": "MIT",

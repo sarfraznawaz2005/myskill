@@ -5,13 +5,22 @@ import { platforms, getPlatformPath } from "../platforms/index.js";
 
 export function detectPlatform(frontmatter) {
   if (
-    frontmatter["allowed-tools"] ||
     frontmatter.context ||
     frontmatter.hooks ||
     frontmatter.agent ||
     frontmatter["user-invocable"]
   ) {
     return platforms.claude;
+  }
+
+  if (
+    frontmatter["allowed-tools"] &&
+    !frontmatter.context &&
+    !frontmatter.hooks &&
+    !frontmatter.agent &&
+    !frontmatter["user-invocable"]
+  ) {
+    return platforms.copilot;
   }
 
   if (frontmatter.license || frontmatter.compatibility) {
@@ -78,7 +87,11 @@ export async function getAllInstalledSkills() {
   for (const platform of Object.values(platforms)) {
     const globalPath = await getPlatformPath(platform.id);
     const localBase =
-      platform.id === "opencode" ? ".opencode/skill" : `.${platform.id}/skills`;
+      platform.id === "opencode"
+        ? ".opencode/skill"
+        : platform.id === "copilot"
+          ? ".github/skills"
+          : `.${platform.id}/skills`;
     const locations = [
       { name: "Global", path: globalPath },
       { name: "Project", path: path.join(process.cwd(), localBase) },
